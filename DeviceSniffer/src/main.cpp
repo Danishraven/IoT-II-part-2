@@ -3,7 +3,7 @@
 #include "meshNode.h"
 
 Scheduler  userScheduler;
-painlessMesh Mesh;
+painlessMesh mesh;
 
 meshNode myMesh("MeshPrefix", "MeshPassword", 5555);
 

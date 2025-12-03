@@ -19,5 +19,7 @@ public:
     void update();
     void send(uint32_t timeValue, const String& text, int number);
     void sendWithNodeTime(const String& text, int number);
+
+    void onMessage(uint32_t from, const String& msg);
 };
 #endif
