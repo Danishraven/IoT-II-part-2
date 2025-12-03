@@ -11,7 +11,10 @@ I dag lavede vi funktionalitet til at ESP32'erne kan se hindanden og sende beske
 # Onsdag
 Skrevet af Nora på vejne af hele gruppen:
 <br>
-I dag har vi arbjedet med 
-Nora: skrevet koden som kan sende data til controlern
-Alexander: Lavet en node til mesh netværket og sat mesh netværket op og nodes kan kommunikere til controlern
-Alex: Skrevet den algoritme der trilateratirere enhedens cordinater 
+I dag har vi arbjedet med:
+<br>
+Nora: har skrevet koden som sniffer enheder sender data til meshnetværket
+<br>
+Alexander: har sat meshnetværket op og sørget for at nodes kan kommunikere til controleren
+<br>
+Alex: Skrevet den algoritme der trilateratirere den sniffede enhedes kordinater
