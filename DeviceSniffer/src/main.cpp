@@ -12,7 +12,7 @@
 #include <Arduino.h>
 
 Scheduler userScheduler;
-painlessMesh Mesh;
+painlessMesh mesh;
 
 meshNode myMesh("MeshPrefix", "MeshPassword", 5555);
 
@@ -40,6 +40,8 @@ static void sendClient(const uint8_t *mac, int8_t rssi)
   memcpy(c.mac, mac, 6);
   c.rssi = rssi;
   clients.push_back(c);
+
+  myMesh.sendWithNodeTime(macToString(mac), rssi);
 
   Serial.printf("DEVICE: %s | RSSI: %3d dBm\n", macToString(mac).c_str(), rssi);
 }
