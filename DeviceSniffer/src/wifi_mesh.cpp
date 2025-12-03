@@ -10,7 +10,7 @@ painlessMesh  mesh;
 // User stub
 void sendMessage() ; // Prototype so PlatformIO doesn't complain
 
-Task taskSendMessage( TASK_SECOND * 1 , TASK_FOREVER, &sendMessage );
+/* Task taskSendMessage( TASK_SECOND * 1 , TASK_FOREVER, &sendMessage );
 
 void sendMessage() {
   String msg = "Hi from node1";
@@ -55,4 +55,4 @@ void setup() {
 void loop() {
   // it will run the user scheduler as well
   mesh.update();
-}
+} */
