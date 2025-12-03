@@ -35,7 +35,7 @@ void sendClient(uint8_t *mac, int8_t rssi)
   Client.rssi = rssi;
   clients.push_back(Client);
 
-  Serial.printf("NEW DEVICE: %s | RSSI: %3d dBm\n",
+  Serial.printf("DEVICE: %s | RSSI: %3d dBm\n",
                 macToString(mac).c_str(), rssi);
 }
 
@@ -92,12 +92,4 @@ void setup()
 
 void loop()
 {
-  // Print active clients every 10 seconds
-  static uint32_t lastPrint = 0;
-  if (millis() - lastPrint > 10000)
-  {
-    lastPrint = millis();
-  }
-
-  delay(100);
 }
