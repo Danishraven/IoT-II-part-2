@@ -1,61 +1,34 @@
-#ifndef DATAMATH_H
-#define DATAMATH_H
-
-#include <WString.h>
+#include "deviceData.h"
 #include <cmath>
 #include <algorithm>
-#include <ctime>
 
-// Internal defaults for RSSI->distance conversion
+// Internal defaults for RSSI->distance conversion (implementation detail)
 static constexpr float DEFAULT_REF_RSSI = -41.0f; // dBm at 1 meter
 static constexpr float DEFAULT_PATHLOSS = 2.0f;   // path-loss exponent
 
-class deviceData
+deviceData::deviceData() = default;
+
+deviceData::deviceData(const String &mac, time_t time, int8_t s1, int8_t s2, int8_t s3)
 {
-private:
-    String macAdress;
-    time_t timeStamp;
-    int8_t sniffer1rssi = 0;
-    int8_t sniffer2rssi = 0;
-    int8_t sniffer3rssi = 0;
+    macAdress = mac;
+    timeStamp = time;
+    sniffer1rssi = s1;
+    sniffer2rssi = s2;
+    sniffer3rssi = s3;
+}
 
-public:
-    struct Point { float x; float y; };
-    struct Area  { Point center; float radius; };
+void deviceData::setSnifferRssi(const String &mac, time_t time, int8_t s1, int8_t s2, int8_t s3)
+{
+    macAdress = mac;
+    timeStamp = time;
+    sniffer1rssi = s1;
+    sniffer2rssi = s2;
+    sniffer3rssi = s3;
+}
 
-    deviceData();
-
-    // Setters for RSSI values
-    void setSnifferRssi(String mac, time_t time, int8_t s1, int8_t s2, int8_t s3)
-    {
-        macAdress = mac;
-        timeStamp = time;
-        sniffer1rssi = s1;
-        sniffer2rssi = s2;
-        sniffer3rssi = s3;
-    }
-
-    // Trilaterate using the three stored RSSI values and provided sniffer coordinates.
-    // x1,y1..x3,y3 are the positions of the three sniffers (meters).
-    // Returns a Point with estimated (x,y). If computation fails, returns average of the three sniffer positions.
-    // Uses internal defaults for RSSI-to-distance conversion.
-    Point trilaterate(float x1, float y1,
-                      float x2, float y2,
-                      float x3, float y3) const;
-
-    // Trilaterate and return an uncertainty area (circle) reflecting expected positional error.
-    // The returned `Area` contains a `center` and a `radius` (meters) representing uncertainty.
-    Area trilaterateArea(float x1, float y1,
-                         float x2, float y2,
-                         float x3, float y3) const;
-};
-
-// Inline/implementation
-inline deviceData::deviceData() = default;
-
-inline deviceData::Point deviceData::trilaterate(float x1, float y1,
-                                                 float x2, float y2,
-                                                 float x3, float y3) const
+deviceData::Point deviceData::trilaterate(float x1, float y1,
+                                          float x2, float y2,
+                                          float x3, float y3) const
 {
     auto rssiToDist = [&](int8_t rssi)->float {
         // d = 10^((refRssi - rssi) / (10 * n)) using internal defaults
@@ -91,9 +64,9 @@ inline deviceData::Point deviceData::trilaterate(float x1, float y1,
     return p;
 }
 
-inline deviceData::Area deviceData::trilaterateArea(float x1, float y1,
-                                                    float x2, float y2,
-                                                    float x3, float y3) const
+deviceData::Area deviceData::trilaterateArea(float x1, float y1,
+                                             float x2, float y2,
+                                             float x3, float y3) const
 {
     // Reuse trilaterate to compute a best-fit center
     Point center = trilaterate(x1, y1, x2, y2, x3, y3);
@@ -132,5 +105,3 @@ inline deviceData::Area deviceData::trilaterateArea(float x1, float y1,
     area.radius = std::max(rms, minUncertainty);
     return area;
 }
-
-#endif // DATAMATH_H
