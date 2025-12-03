@@ -1,6 +1,11 @@
 #include <Arduino.h>
 #include "FS.h"
+#include "meshNode.h"
 
+Scheduler  userScheduler;
+painlessMesh Mesh;
+
+meshNode myMesh("MeshPrefix", "MeshPassword", 5555);
 
 // put function declarations here:
 String readFile(fs::FS &fs, const char * path);
@@ -265,6 +270,8 @@ void printHeader() {
 
 void setup() {
   Serial.begin(115200);
+  myMesh.begin();
+  /*
   delay(1000);
   
   Serial.println("ESP32 WiFi Client Device Sniffer");
@@ -286,16 +293,19 @@ void setup() {
   
   // Print header
   printHeader();
+  */
 }
 
 void loop() {
+  myMesh.update();
+  /*
   // Clean up old entries every 5 seconds
   static uint32_t lastCleanup = 0;
   if (millis() - lastCleanup > 5000) {
     cleanupOldClients();
     lastCleanup = millis();
   }
-  
+ 
   // Print active clients every 10 seconds
   static uint32_t lastPrint = 0;
   if (millis() - lastPrint > 10000) {
@@ -304,4 +314,5 @@ void loop() {
   }
   
   delay(100);
+  */
 }
