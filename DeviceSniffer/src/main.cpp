@@ -16,9 +16,17 @@ painlessMesh Mesh;
 
 meshNode myMesh("MeshPrefix", "MeshPassword", 5555);
 
+struct ClientDevice
+{
+  uint8_t mac[6];
+  int8_t rssi;
+};
+
+std::vector<ClientDevice> clients;
+
 // Configuration
 const int CHANNEL = 1; // WiFi channel to monitor (1-13)
-
+static String macToString(const uint8_t *mac)
 {
   char macStr[18];
   sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X",
