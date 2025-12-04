@@ -1,3 +1,5 @@
+#include "deviceData.h"
+#include <time.h>
 
 #include <vector>
 #include "FS.h"
