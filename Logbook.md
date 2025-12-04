@@ -18,3 +18,9 @@ Nora: har skrevet koden som sniffer enheder sender data til meshnetværket
 Alexander: har sat meshnetværket op og sørget for at nodes kan kommunikere til controleren
 <br>
 Alex: Skrevet den algoritme der trilateratirere den sniffede enhedes kordinater
+
+# Torsdag
+Skrevet af Nora på vejne af hele gruppen:
+<br>
+Vi har samlet de dele af koden som blev skrevet Onsdag
+Vi har fået Meshnetted til at slukke når vi skriver data til MQTT servern
