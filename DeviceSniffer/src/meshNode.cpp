@@ -57,6 +57,15 @@ void meshNode::begin()
     }
 }
 
+void meshNode::stopMesh()
+{
+    // Only meaningful on this ESP
+    mesh.stop();              // painlessMesh: stop all mesh activity
+    g_controllerInstance = nullptr;  // optional: clear pointer if this was controller
+    g_clientInstance     = nullptr;  // optional if you want to be strict
+}
+
+
 void meshNode::update()
 {
     mesh.update();

@@ -23,7 +23,9 @@ extern const char *MQTT_TOPIC;
 // Utility functions (definitions in mqttHandler.cpp)
 String getLocalTimeString();
 String getLocalTime();
+void startWifi();
 void initWiFi();
+void stopWiFi();
 void sendToMQTT(String payload);
 
 #endif // MQTT_HANDLER_H

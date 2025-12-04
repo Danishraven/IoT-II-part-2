@@ -38,6 +38,7 @@ public:
              const std::string &deviceName);
 
     void begin();
+    void stopMesh();
     void update();
     void formatData(String &out, uint32_t timeValue, const String &text, int number);
     void send(uint32_t timeValue, const String &text, int number);

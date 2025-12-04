@@ -46,11 +46,10 @@ String getLocalTime()
         return String("");
     }
     String timeString = asctime(&timeinfo);
-    Serial.println(timeString);
     return timeString;
 }
 
-void initWiFi()
+void startWifi()
 {
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -61,10 +60,21 @@ void initWiFi()
         delay(1000);
     }
     Serial.println(WiFi.localIP());
+}
+
+void initWiFi()
+{
+    startWifi();
 
     // Init and get the time
     configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
     getLocalTime();
+}
+
+void stopWiFi()
+{
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
 }
 
 void sendToMQTT(String payload)
