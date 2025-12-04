@@ -8,9 +8,10 @@ static constexpr float DEFAULT_PATHLOSS = 2.0f;   // path-loss exponent
 
 deviceData::deviceData() = default;
 
-deviceData::deviceData(const String &mac, int8_t s1, int8_t s2, int8_t s3)
+deviceData::deviceData(const String &mac, time_t ts, int8_t s1, int8_t s2, int8_t s3)
 {
-    macAdress = mac;
+    macAdress = hashMac(mac);
+    timestamp = ts;
     sniffer1rssi = s1;
     sniffer2rssi = s2;
     sniffer3rssi = s3;
@@ -21,9 +22,11 @@ int8_t deviceData::getRssi1() const { return sniffer1rssi; }
 int8_t deviceData::getRssi2() const { return sniffer2rssi; }
 int8_t deviceData::getRssi3() const { return sniffer3rssi; }
 
-void deviceData::setSnifferRssi(const String &mac, int8_t s1, int8_t s2, int8_t s3)
+void deviceData::setSnifferRssi(const String &mac, time_t ts, int8_t s1, int8_t s2, int8_t s3)
 {
-    macAdress = mac;
+    macAdress = hashMac(mac);
+
+    timestamp = ts;
     sniffer1rssi = s1;
     sniffer2rssi = s2;
     sniffer3rssi = s3;
@@ -111,4 +114,12 @@ deviceData::Area deviceData::trilaterateArea(float x1, float y1,
     area.center = center;
     area.radius = std::max(rms, minUncertainty);
     return area;
+}
+
+String hashMac(const String mac) {
+    unsigned long hash = 5381;
+    for (size_t i = 0; i < mac.length(); ++i) {
+        hash = ((hash << 5) + hash) + mac[i]; // hash * 33 + c
+    }
+    return String(hash);
 }
