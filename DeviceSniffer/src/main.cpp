@@ -21,7 +21,7 @@ bool isController = true;
 meshNode myMesh("MeshPrefix", "MeshPassword", 5555, isController, "controllerNode");
 
 unsigned long lastCall = 0;
-const unsigned long interval = 10000;
+const unsigned long interval = 60000;
 
 struct SeenMac
 {
@@ -113,19 +113,12 @@ void loop()
             Serial.println(myMesh.devices.size());
             if (myMesh.devices.size() != 0)
             {
-                Serial.println("Stopping mesh");
                 myMesh.stopMesh(); // Stop mesh to safely access devices
-                Serial.println("starting WiFi");
                 startWifi();    // Restart WiFi to send MQTT
-                sendToMQTT("ping");
-                Serial.println("Sending to MQTT");
                 String payload = createJsonArray(myMesh.devices);
                 sendToMQTT(payload);
                 myMesh.devices.clear(); // Clear after sending
-                Serial.println("Sent to MQTT");
-                Serial.println("Stopping WiFi");
                 stopWiFi();     // Stop WiFi after sending
-                Serial.println("Restarting mesh");
                 myMesh.begin(); // Restart mesh
                 startSniffer(CHANNEL);
             }
@@ -177,7 +170,6 @@ void loop()
 
 String createJsonArray (const std::vector<deviceData> &devices)
 {
-    Serial.println("Creating JSON array");
     String json = "[";
     for (size_t i = 0; i < devices.size(); i++)
     {

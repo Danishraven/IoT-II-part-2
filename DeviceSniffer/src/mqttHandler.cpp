@@ -110,7 +110,6 @@ void sendToMQTT(String payload)
         }
     }
 
-    Serial.println("Sending MQTT message");
     mqttClient.setBufferSize(65535);
     mqttClient.publish(MQTT_TOPIC, payload.c_str());
 }
