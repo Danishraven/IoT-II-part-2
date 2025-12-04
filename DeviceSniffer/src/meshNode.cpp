@@ -33,14 +33,11 @@ void meshNode::update() {
 }
 
 void meshNode::send(uint32_t timeValue, const String& text, int number) {
-    Serial.printf("Sending message: time=%u, text=%s, number=%d\n",
-                  timeValue, text.c_str(), number);
     String msg = String(timeValue) + "|" + text + "|" + String(number);
     mesh.sendBroadcast(msg);
 }
 
 void meshNode::sendWithNodeTime(const String& text, int number) {
-    Serial.println("Getting node time...");
     uint32_t t = mesh.getNodeTime();
     send(t, text, number);
 }

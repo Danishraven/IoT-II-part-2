@@ -42,9 +42,10 @@ static void sendClient(const uint8_t *mac, int8_t rssi)
   clients.push_back(c);
 
   myMesh.sendWithNodeTime(macToString(mac), rssi);
-
-  Serial.printf("DEVICE: %s | RSSI: %3d dBm\n", macToString(mac).c_str(), rssi);
 }
+
+volatile bool hasNewClient = false;
+ClientDevice lastClient;
 
 static void promiscuousCallback(void *buf, wifi_promiscuous_pkt_type_t type)
 {
@@ -63,15 +64,16 @@ static void promiscuousCallback(void *buf, wifi_promiscuous_pkt_type_t type)
   if (frameSubType == 4)
   {
     uint8_t *srcMac = &payload[10];
-    sendClient(srcMac, rssi);
+
+    // Copy into a global buffer (no vector, no String)
+    memcpy(lastClient.mac, srcMac, 6);
+    lastClient.rssi = rssi;
+    hasNewClient = true;
   }
 }
 
 void startSniffer(int channel)
 {
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
-
   esp_wifi_set_promiscuous(true);
   esp_wifi_set_promiscuous_rx_cb(&promiscuousCallback);
   esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
@@ -87,4 +89,20 @@ void setup()
 void loop()
 {
   myMesh.update();
+
+  static unsigned long lastTick = 0;
+  if (millis() - lastTick > 1000) {
+    lastTick = millis();
+  }
+
+  if (hasNewClient) {
+    hasNewClient = false;
+
+    // Now we are in normal Arduino context: safe to use String, vector, mesh send, etc.
+    String macStr = macToString(lastClient.mac);
+    myMesh.sendWithNodeTime(macStr, lastClient.rssi);
+
+    // Optional: also push into your vector here
+    clients.push_back(lastClient);
+  }
 }
