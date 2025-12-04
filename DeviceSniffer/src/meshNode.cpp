@@ -182,6 +182,8 @@ void meshNode::addSnifferSample(const String &mac, int8_t rssi, const String &de
             // If all three devices have reported, call your function
             if (ms.filled[0] && ms.filled[1] && ms.filled[2])
             {
+                Serial.printf("Trilaterating for MAC %s with RSSIs %d, %d, %d\n",
+                              ms.mac.c_str(), ms.rssi[0], ms.rssi[1], ms.rssi[2]);
                 deviceData data = deviceData(ms.mac,
                                              ms.rssi[0],
                                              ms.rssi[1],
