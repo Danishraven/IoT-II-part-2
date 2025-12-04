@@ -3,6 +3,8 @@
 
 #include <string>
 #include "painlessMesh.h"
+#include "deviceData.h"
+#include <vector>
 
 class meshNode
 {
