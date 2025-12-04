@@ -17,11 +17,17 @@
 Scheduler userScheduler;
 painlessMesh mesh;
 
-meshNode myMesh("MeshPrefix", "MeshPassword", 5555, true, "ControllerNode");
+bool isController = true;
 
-struct SeenMac {
-  String mac;
-  uint32_t lastSeenMs;
+meshNode myMesh("MeshPrefix", "MeshPassword", 5555, isController, "ControllerNode");
+
+unsigned long lastCall = 0;
+const unsigned long interval = 60000;
+
+struct SeenMac
+{
+    String mac;
+    uint32_t lastSeenMs;
 };
 
 std::vector<SeenMac> seenMacs;
@@ -30,8 +36,8 @@ const uint32_t DUP_WINDOW_MS = 500;
 
 struct ClientDevice
 {
-  uint8_t mac[6];
-  int8_t rssi;
+    uint8_t mac[6];
+    int8_t rssi;
 };
 
 std::vector<ClientDevice> clients;
@@ -40,10 +46,10 @@ std::vector<ClientDevice> clients;
 const int CHANNEL = 1; // WiFi channel to monitor (1-13)
 static String macToString(const uint8_t *mac)
 {
-  char macStr[18];
-  sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X",
-          mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-  return String(macStr);
+    char macStr[18];
+    sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X",
+            mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    return String(macStr);
 }
 
 volatile bool hasNewClient = false;
@@ -51,90 +57,97 @@ ClientDevice lastClient;
 
 static void promiscuousCallback(void *buf, wifi_promiscuous_pkt_type_t type)
 {
-  if (type != WIFI_PKT_MGMT)
-    return;
+    if (type != WIFI_PKT_MGMT)
+        return;
 
-  wifi_promiscuous_pkt_t *pkt = (wifi_promiscuous_pkt_t *)buf;
-  wifi_pkt_rx_ctrl_t ctrl = pkt->rx_ctrl;
+    wifi_promiscuous_pkt_t *pkt = (wifi_promiscuous_pkt_t *)buf;
+    wifi_pkt_rx_ctrl_t ctrl = pkt->rx_ctrl;
 
-  int8_t rssi = ctrl.rssi;
+    int8_t rssi = ctrl.rssi;
 
-  uint8_t *payload = pkt->payload;
-  uint8_t frameSubType = (payload[0] & 0xF0) >> 4;
+    uint8_t *payload = pkt->payload;
+    uint8_t frameSubType = (payload[0] & 0xF0) >> 4;
 
-  // Probe request subtype
-  if (frameSubType == 4)
-  {
-    uint8_t *srcMac = &payload[10];
+    // Probe request subtype
+    if (frameSubType == 4)
+    {
+        uint8_t *srcMac = &payload[10];
 
-    // Copy into a global buffer (no vector, no String)
-    memcpy(lastClient.mac, srcMac, 6);
-    lastClient.rssi = rssi;
-    hasNewClient = true;
-  }
+        // Copy into a global buffer (no vector, no String)
+        memcpy(lastClient.mac, srcMac, 6);
+        lastClient.rssi = rssi;
+        hasNewClient = true;
+    }
 }
 
 void startSniffer(int channel)
 {
-  esp_wifi_set_promiscuous(true);
-  esp_wifi_set_promiscuous_rx_cb(&promiscuousCallback);
-  esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+    esp_wifi_set_promiscuous(true);
+    esp_wifi_set_promiscuous_rx_cb(&promiscuousCallback);
+    esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
 }
 
 void setup()
 {
     Serial.begin(115200);
-    int mil = millis();
-    sendToMQTT("TEST1");
-    Serial.printf("MQTT send took %d ms\n", millis() - mil);
-    mil = millis();
-    sendToMQTT("TEST2");
-    Serial.printf("MQTT send took %d ms\n", millis() - mil);
-    mil = millis();
-    sendToMQTT("TEST3");
-    Serial.printf("MQTT send took %d ms\n", millis() - mil);
-//   myMesh.begin();
-//   startSniffer(CHANNEL);
-  delay(2000000);
+    myMesh.begin();
+    if (isController)
+    {
+        // start wifi
+    }
+    startSniffer(CHANNEL);
 }
 
 void loop()
 {
-  myMesh.update();
+    myMesh.update();
 
-  if (!hasNewClient) {
-    return;
-  }
+    unsigned long now = millis();
 
-  hasNewClient = false;
-
-  String macStr = macToString(lastClient.mac);
-  int8_t rssi   = lastClient.rssi;
-  uint32_t now  = millis();
-
-  bool seenBefore = false;
-
-  for (auto &entry : seenMacs) {
-    if (entry.mac == macStr) {
-      seenBefore = true;
-      uint32_t dt = now - entry.lastSeenMs;
-
-      if (dt < DUP_WINDOW_MS) {
-        return;
-      }
-
-      entry.lastSeenMs = now;
-      break;
+    if (now - lastCall < interval)
+    {
+        // Time data here
+        sendToMQTT();
     }
-  }
 
-  if (!seenBefore) {
-    SeenMac entry;
-    entry.mac = macStr;
-    entry.lastSeenMs = now;
-    seenMacs.push_back(entry);
-  }
+    if (!hasNewClient)
+    {
+        return;
+    }
 
-  myMesh.sendDataToMesh(macStr, rssi);
-  clients.push_back(lastClient);
+    hasNewClient = false;
+
+    String macStr = macToString(lastClient.mac);
+    int8_t rssi = lastClient.rssi;
+    uint32_t now = millis();
+
+    bool seenBefore = false;
+
+    for (auto &entry : seenMacs)
+    {
+        if (entry.mac == macStr)
+        {
+            seenBefore = true;
+            uint32_t dt = now - entry.lastSeenMs;
+
+            if (dt < DUP_WINDOW_MS)
+            {
+                return;
+            }
+
+            entry.lastSeenMs = now;
+            break;
+        }
+    }
+
+    if (!seenBefore)
+    {
+        SeenMac entry;
+        entry.mac = macStr;
+        entry.lastSeenMs = now;
+        seenMacs.push_back(entry);
+    }
+
+    myMesh.sendDataToMesh(macStr, rssi);
+    clients.push_back(lastClient);
 }

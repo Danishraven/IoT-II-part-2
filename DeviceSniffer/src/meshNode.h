@@ -4,7 +4,8 @@
 #include <string>
 #include "painlessMesh.h"
 
-class meshNode {
+class meshNode
+{
 private:
     std::string prefix;
     std::string password;
@@ -12,34 +13,35 @@ private:
     bool isController;
     std::string deviceName;
 
-    struct RssiSlots {
+    struct RssiSlots
+    {
         String mac;
-        int8_t rssi[3]  = {0, 0, 0};
-        bool   filled[3] = {false, false, false};
+        int8_t rssi[3] = {0, 0, 0};
+        bool filled[3] = {false, false, false};
     };
 
     static const size_t MAX_MACS = 64;
     RssiSlots macSlots[MAX_MACS];
     size_t macSlotCount = 0;
 
-    int  deviceSlotFromName(const String& devName);
-    void addSnifferSample(const String& mac, int8_t rssi, const String& devName);
+    int deviceSlotFromName(const String &devName);
+    void addSnifferSample(const String &mac, int8_t rssi, const String &devName);
 
 public:
-    meshNode(const std::string& meshPrefix,
-             const std::string& meshPassword,
+    meshNode(const std::string &meshPrefix,
+             const std::string &meshPassword,
              int meshPort,
-             bool isController, 
-             const std::string& deviceName);
+             bool isController,
+             const std::string &deviceName);
 
     void begin();
     void update();
-    void formatData(String& out, uint32_t timeValue, const String& text, int number);
-    void send(uint32_t timeValue, const String& text, int number);
-    void sendWithNodeTime(const String& text, int number);
-    void sendDataToMesh(const String& text, int number);
-    void controllerHandleMessage(const String& text, int number);
+    void formatData(String &out, uint32_t timeValue, const String &text, int number);
+    void send(uint32_t timeValue, const String &text, int number);
+    void sendWithNodeTime(const String &text, int number);
+    void sendDataToMesh(const String &text, int number);
+    void controllerHandleMessage(const String &text, int number);
 
-    void onMessage(const String& msg);
+    void onMessage(const String &msg);
 };
 #endif

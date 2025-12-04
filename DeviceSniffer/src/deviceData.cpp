@@ -33,7 +33,8 @@ deviceData::Point deviceData::trilaterate(float x1, float y1,
                                           float x2, float y2,
                                           float x3, float y3) const
 {
-    auto rssiToDist = [&](int8_t rssi)->float {
+    auto rssiToDist = [&](int8_t rssi) -> float
+    {
         // d = 10^((refRssi - rssi) / (10 * n)) using internal defaults
         float exponent = (DEFAULT_REF_RSSI - static_cast<float>(rssi)) / (10.0f * DEFAULT_PATHLOSS);
         return std::pow(10.0f, exponent);
@@ -46,16 +47,17 @@ deviceData::Point deviceData::trilaterate(float x1, float y1,
     // Setup linear system from circle equations
     float A1 = 2.0f * (x2 - x1);
     float B1 = 2.0f * (y2 - y1);
-    float C1 = r1*r1 - r2*r2 - x1*x1 + x2*x2 - y1*y1 + y2*y2;
+    float C1 = r1 * r1 - r2 * r2 - x1 * x1 + x2 * x2 - y1 * y1 + y2 * y2;
 
     float A2 = 2.0f * (x3 - x1);
     float B2 = 2.0f * (y3 - y1);
-    float C2 = r1*r1 - r3*r3 - x1*x1 + x3*x3 - y1*y1 + y3*y3;
+    float C2 = r1 * r1 - r3 * r3 - x1 * x1 + x3 * x3 - y1 * y1 + y3 * y3;
 
     float det = A1 * B2 - A2 * B1;
 
     deviceData::Point p;
-    if (std::fabs(det) < 1e-6f) {
+    if (std::fabs(det) < 1e-6f)
+    {
         // Degenerate or nearly collinear sniffers; fallback to centroid
         p.x = (x1 + x2 + x3) / 3.0f;
         p.y = (y1 + y2 + y3) / 3.0f;
@@ -74,7 +76,8 @@ deviceData::Area deviceData::trilaterateArea(float x1, float y1,
     // Reuse trilaterate to compute a best-fit center
     Point center = trilaterate(x1, y1, x2, y2, x3, y3);
 
-    auto rssiToDist = [&](int8_t rssi)->float {
+    auto rssiToDist = [&](int8_t rssi) -> float
+    {
         float exponent = (DEFAULT_REF_RSSI - static_cast<float>(rssi)) / (10.0f * DEFAULT_PATHLOSS);
         return std::pow(10.0f, exponent);
     };
@@ -84,10 +87,11 @@ deviceData::Area deviceData::trilaterateArea(float x1, float y1,
     float r3 = rssiToDist(sniffer3rssi);
 
     // Compute residuals between expected radii and distances from computed center
-    auto dist = [](const Point &p, float x, float y)->float {
+    auto dist = [](const Point &p, float x, float y) -> float
+    {
         float dx = p.x - x;
         float dy = p.y - y;
-        return std::sqrt(dx*dx + dy*dy);
+        return std::sqrt(dx * dx + dy * dy);
     };
 
     float d1 = dist(center, x1, y1);
@@ -99,7 +103,7 @@ deviceData::Area deviceData::trilaterateArea(float x1, float y1,
     float e3 = d3 - r3;
 
     // Root-mean-square residual as a simple uncertainty estimator
-    float rms = std::sqrt((e1*e1 + e2*e2 + e3*e3) / 3.0f);
+    float rms = std::sqrt((e1 * e1 + e2 * e2 + e3 * e3) / 3.0f);
 
     // Minimum uncertainty floor to avoid zero radius when perfect fit occurs
     const float minUncertainty = 0.05f; // meters

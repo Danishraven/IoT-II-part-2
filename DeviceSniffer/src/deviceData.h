@@ -14,8 +14,16 @@ private:
     int8_t sniffer3rssi = 0;
 
 public:
-    struct Point { float x; float y; };
-    struct Area  { Point center; float radius; };
+    struct Point
+    {
+        float x;
+        float y;
+    };
+    struct Area
+    {
+        Point center;
+        float radius;
+    };
 
     deviceData();
     // Construct with provided MAC and three RSSI values

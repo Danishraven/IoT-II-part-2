@@ -8,35 +8,40 @@
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 
-const char* WIFI_SSID = "TEC-IOT";
-const char* WIFI_PASSWORD = "42090793";
+const char *WIFI_SSID = "TEC-IOT";
+const char *WIFI_PASSWORD = "42090793";
 
-const char* ntpServer = "pool.ntp.org";
-const long  gmtOffset_sec = 3600;
-const int   daylightOffset_sec = 3600;
+const char *ntpServer = "pool.ntp.org";
+const long gmtOffset_sec = 3600;
+const int daylightOffset_sec = 3600;
 
-const char* MQTT_SERVER = "wilson.local";
+const char *MQTT_SERVER = "wilson.local";
 const int MQTT_PORT = 8883;
-const char* MQTT_USER = "elev1";
-const char* MQTT_PASS = "password";
-const char* MQTT_TOPIC = "esp32/alex_alexander_nora/sniffer";
+const char *MQTT_USER = "elev1";
+const char *MQTT_PASS = "password";
+const char *MQTT_TOPIC = "esp32/alex_alexander_nora/sniffer";
 
-String getLocalTimeString() {
+String getLocalTimeString()
+{
 	struct tm timeinfo;
-	if (!getLocalTime(&timeinfo)) {
+	if (!getLocalTime(&timeinfo))
+	{
 		return String(); // empty -> indicates failure
 	}
 	char buf[32];
-	if (strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &timeinfo) == 0) {
+	if (strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &timeinfo) == 0)
+	{
 		return String();
 	}
 	return String(buf);
 }
 
-String getLocalTime(){
+String getLocalTime()
+{
 	// SetTimezone();
 	struct tm timeinfo;
-	if(!getLocalTime(&timeinfo)){
+	if (!getLocalTime(&timeinfo))
+	{
 		Serial.println("Failed to obtain time");
 		return String("");
 	}
@@ -45,11 +50,13 @@ String getLocalTime(){
 	return timeString;
 }
 
-void initWiFi() {
+void initWiFi()
+{
 	WiFi.mode(WIFI_STA);
 	WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 	Serial.print("Connecting to WiFi");
-	while (WiFi.status() != WL_CONNECTED) {
+	while (WiFi.status() != WL_CONNECTED)
+	{
 		Serial.print('.');
 		delay(1000);
 	}
@@ -60,9 +67,11 @@ void initWiFi() {
 	getLocalTime();
 }
 
-void sendToMQTT(String payload){
-  	if (WiFi.status() != WL_CONNECTED) {
-    	initWiFi();
+void sendToMQTT(String payload)
+{
+	if (WiFi.status() != WL_CONNECTED)
+	{
+		initWiFi();
 	}
 	WiFiClientSecure espClient;
 	PubSubClient mqttClient(espClient);
@@ -77,7 +86,7 @@ void sendToMQTT(String payload){
 	{
 		Serial.print("Connecting to MQTT over TLS...");
 
-   		String clientId = "ESP32-" + String(random(0xffff), HEX);
+		String clientId = "ESP32-" + String(random(0xffff), HEX);
 
 		if (mqttClient.connect(clientId.c_str(), MQTT_USER, MQTT_PASS))
 		{
@@ -90,7 +99,7 @@ void sendToMQTT(String payload){
 			Serial.println(" - retrying in 5 seconds");
 			delay(5000);
 		}
-  	}
+	}
 	mqttClient.setBufferSize(65535);
 	mqttClient.publish(MQTT_TOPIC, payload.c_str());
 }
