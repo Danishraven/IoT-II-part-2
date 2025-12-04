@@ -11,7 +11,6 @@ deviceData::deviceData() = default;
 deviceData::deviceData(const String &mac, time_t time, int8_t s1, int8_t s2, int8_t s3)
 {
     macAdress = mac;
-    timeStamp = time;
     sniffer1rssi = s1;
     sniffer2rssi = s2;
     sniffer3rssi = s3;
@@ -20,7 +19,6 @@ deviceData::deviceData(const String &mac, time_t time, int8_t s1, int8_t s2, int
 void deviceData::setSnifferRssi(const String &mac, time_t time, int8_t s1, int8_t s2, int8_t s3)
 {
     macAdress = mac;
-    timeStamp = time;
     sniffer1rssi = s1;
     sniffer2rssi = s2;
     sniffer3rssi = s3;

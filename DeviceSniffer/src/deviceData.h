@@ -9,7 +9,6 @@ class deviceData
 {
 private:
     String macAdress;
-    time_t timeStamp;
     int8_t sniffer1rssi = 0;
     int8_t sniffer2rssi = 0;
     int8_t sniffer3rssi = 0;

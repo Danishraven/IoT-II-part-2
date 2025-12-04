@@ -10,6 +10,7 @@
 // Structure to hold client device information
 #include "sniffer.h"
 #include <Arduino.h>
+#include "mqttHandler.h"
 
 Scheduler userScheduler;
 painlessMesh mesh;
@@ -81,9 +82,19 @@ void startSniffer(int channel)
 
 void setup()
 {
-  Serial.begin(115200);
-  myMesh.begin();
-  startSniffer(CHANNEL);
+    Serial.begin(115200);
+    int mil = millis();
+    sendToMQTT("TEST1");
+    Serial.printf("MQTT send took %d ms\n", millis() - mil);
+    mil = millis();
+    sendToMQTT("TEST2");
+    Serial.printf("MQTT send took %d ms\n", millis() - mil);
+    mil = millis();
+    sendToMQTT("TEST3");
+    Serial.printf("MQTT send took %d ms\n", millis() - mil);
+//   myMesh.begin();
+//   startSniffer(CHANNEL);
+  delay(2000000);
 }
 
 void loop()
