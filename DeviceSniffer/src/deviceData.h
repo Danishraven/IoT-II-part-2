@@ -9,7 +9,7 @@ class deviceData
 {
 private:
     String macAdress;
-    time_t timestamp;
+    String timestamp;
     int8_t sniffer1rssi = 0;
     int8_t sniffer2rssi = 0;
     int8_t sniffer3rssi = 0;
@@ -28,10 +28,10 @@ public:
 
     deviceData();
     // Construct with provided MAC and three RSSI values
-    deviceData(const String &mac, time_t ts, int8_t s1, int8_t s2, int8_t s3);
+    deviceData(const String &mac, int8_t s1, int8_t s2, int8_t s3);
 
     // Setters for RSSI values (store MAC & timestamp alongside RSSI measurements)
-    void setSnifferRssi(const String &mac, time_t ts, int8_t s1, int8_t s2, int8_t s3);
+    void setSnifferRssi(const String &mac, int8_t s1, int8_t s2, int8_t s3);
 
     // Trilateration APIs
     Point trilaterate(float x1, float y1,
@@ -44,9 +44,12 @@ public:
 
     // Accessors
     String getMac() const;
+    String getTimestamp() const;
     int8_t getRssi1() const;
     int8_t getRssi2() const;
     int8_t getRssi3() const;
+    // Last computed position (filled by caller when trilaterate is used)
+    Point lastPoint;
 };
 
 #endif // DEVICEDATA_H

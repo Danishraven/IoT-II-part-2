@@ -86,6 +86,8 @@ void startSniffer(int channel)
     esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
 }
 
+String createJsonArray(const std::vector<deviceData> &devices);
+
 void setup()
 {
     Serial.begin(115200);
@@ -105,9 +107,12 @@ void loop()
 
     if (timerNow - lastCall < interval)
     {
-        String payload = createJsonArray(myMesh.devices);
-        lastCall = timerNow;
-        sendToMQTT(payload);
+        if (myMesh.devices.size() != 0)
+        {
+            String payload = createJsonArray(myMesh.devices);
+            lastCall = timerNow;
+            sendToMQTT(payload);
+        }
     }
 
     if (!hasNewClient)
@@ -152,7 +157,7 @@ void loop()
     clients.push_back(lastClient);
 }
 
-String createJsonArray (vector<deviceData> &devices)
+String createJsonArray (const std::vector<deviceData> &devices)
 {
     String json = "[";
     for (size_t i = 0; i < devices.size(); i++)
@@ -160,9 +165,9 @@ String createJsonArray (vector<deviceData> &devices)
         const deviceData &dev = devices[i];
         json += "{";
         json += "\"mac\":\"" + dev.getMac() + "\",";
-        json += "\"X\":" + String(dev.Point.x) + ",";
-        json += "\"Y\":" + String(dev.Point.y) + ",";
-        json += "\"timestamp\":" + String(dev.getTimestamp());
+        json += "\"X\":" + String(dev.lastPoint.x) + ",";
+        json += "\"Y\":" + String(dev.lastPoint.y) + ",";
+        json += "\"timestamp\":" + dev.getTimestamp();
         json += "}";
         if (i < devices.size() - 1)
         {

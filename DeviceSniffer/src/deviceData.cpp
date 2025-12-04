@@ -1,6 +1,7 @@
 #include "deviceData.h"
 #include <cmath>
 #include <algorithm>
+#include "mqttHandler.h"
 
 // Internal defaults for RSSI->distance conversion (implementation detail)
 static constexpr float DEFAULT_REF_RSSI = -41.0f; // dBm at 1 meter
@@ -8,26 +9,34 @@ static constexpr float DEFAULT_PATHLOSS = 2.0f;   // path-loss exponent
 
 deviceData::deviceData() = default;
 
-deviceData::deviceData(const String &mac, time_t ts, int8_t s1, int8_t s2, int8_t s3)
+String hashMac(const String mac) {
+    unsigned long hash = 5381;
+    for (size_t i = 0; i < mac.length(); ++i) {
+        hash = ((hash << 5) + hash) + mac[i]; // hash * 33 + c
+    }
+    return String(hash);
+}
+
+deviceData::deviceData(const String &mac, int8_t s1, int8_t s2, int8_t s3)
 {
     macAdress = hashMac(mac);
-    timestamp = ts;
+    timestamp = getLocalTime();
     sniffer1rssi = s1;
     sniffer2rssi = s2;
     sniffer3rssi = s3;
 }
 
 String deviceData::getMac() const { return macAdress; }
-time_t deviceData::getTimestamp() const { return timestamp; }
 int8_t deviceData::getRssi1() const { return sniffer1rssi; }
 int8_t deviceData::getRssi2() const { return sniffer2rssi; }
 int8_t deviceData::getRssi3() const { return sniffer3rssi; }
 
-void deviceData::setSnifferRssi(const String &mac, time_t ts, int8_t s1, int8_t s2, int8_t s3)
+String deviceData::getTimestamp() const { return timestamp; }
+
+void deviceData::setSnifferRssi(const String &mac, int8_t s1, int8_t s2, int8_t s3)
 {
     macAdress = hashMac(mac);
-
-    timestamp = ts;
+    timestamp = getLocalTime();
     sniffer1rssi = s1;
     sniffer2rssi = s2;
     sniffer3rssi = s3;
@@ -49,15 +58,15 @@ deviceData::Point deviceData::trilaterate(float x1, float y1,
     float r3 = rssiToDist(sniffer3rssi);
 
     // Setup linear system from circle equations
-    float A1 = 2.0f * (x2 - x1);
-    float B1 = 2.0f * (y2 - y1);
-    float C1 = r1 * r1 - r2 * r2 - x1 * x1 + x2 * x2 - y1 * y1 + y2 * y2;
+    float NumberA1 = 2.0f * (x2 - x1);
+    float NumberB1 = 2.0f * (y2 - y1);
+    float NumberC1 = r1 * r1 - r2 * r2 - x1 * x1 + x2 * x2 - y1 * y1 + y2 * y2;
 
-    float A2 = 2.0f * (x3 - x1);
-    float B2 = 2.0f * (y3 - y1);
-    float C2 = r1 * r1 - r3 * r3 - x1 * x1 + x3 * x3 - y1 * y1 + y3 * y3;
+    float NumberA2 = 2.0f * (x3 - x1);
+    float NumberB2 = 2.0f * (y3 - y1);
+    float NumberC2 = r1 * r1 - r3 * r3 - x1 * x1 + x3 * x3 - y1 * y1 + y3 * y3;
 
-    float det = A1 * B2 - A2 * B1;
+    float det = NumberA1 * NumberB2 - NumberA2 * NumberB1;
 
     deviceData::Point p;
     if (std::fabs(det) < 1e-6f)
@@ -68,8 +77,8 @@ deviceData::Point deviceData::trilaterate(float x1, float y1,
         return p;
     }
 
-    p.x = (C1 * B2 - C2 * B1) / det;
-    p.y = (A1 * C2 - A2 * C1) / det;
+    p.x = (NumberC1 * NumberB2 - NumberC2 * NumberB1) / det;
+    p.y = (NumberA1 * NumberC2 - NumberA2 * NumberC1) / det;
     return p;
 }
 
@@ -115,12 +124,4 @@ deviceData::Area deviceData::trilaterateArea(float x1, float y1,
     area.center = center;
     area.radius = std::max(rms, minUncertainty);
     return area;
-}
-
-String hashMac(const String mac) {
-    unsigned long hash = 5381;
-    for (size_t i = 0; i < mac.length(); ++i) {
-        hash = ((hash << 5) + hash) + mac[i]; // hash * 33 + c
-    }
-    return String(hash);
 }
