@@ -188,10 +188,10 @@ void meshNode::addSnifferSample(const String &mac, int8_t rssi, const String &de
                                              ms.rssi[0],
                                              ms.rssi[1],
                                              ms.rssi[2]);
-                auto p = data.trilaterate(snifferPositions[0].x, snifferPositions[0].y,
+                auto p = data.trilaterateArea(snifferPositions[0].x, snifferPositions[0].y,
                                           snifferPositions[1].x, snifferPositions[1].y,
                                           snifferPositions[2].x, snifferPositions[2].y);
-                data.lastPoint = p;
+                data.lastArea = p;
                 this->devices.push_back(data);
                 // Reset for next round for this MAC
                 ms.filled[0] = ms.filled[1] = ms.filled[2] = false;

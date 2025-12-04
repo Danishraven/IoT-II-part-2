@@ -176,8 +176,9 @@ String createJsonArray (const std::vector<deviceData> &devices)
         const deviceData &dev = devices[i];
         json += "{";
         json += "\"mac\":\"" + dev.getMac() + "\",";
-        json += "\"X\":" + String(dev.lastPoint.x) + ",";
-        json += "\"Y\":" + String(dev.lastPoint.y) + ",";
+        json += "\"X\":" + String(dev.lastArea.center.x) + ",";
+        json += "\"Y\":" + String(dev.lastArea.center.y) + ",";
+        json += "\"errorRadius\":" + String(dev.lastArea.radius) + ",";
         json += "\"timestamp\":" + dev.getTimestamp();
         json += "}";
         if (i < devices.size() - 1)

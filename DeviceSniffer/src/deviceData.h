@@ -49,7 +49,7 @@ public:
     int8_t getRssi2() const;
     int8_t getRssi3() const;
     // Last computed position (filled by caller when trilaterate is used)
-    Point lastPoint;
+    Area lastArea;
 };
 
 #endif // DEVICEDATA_H
