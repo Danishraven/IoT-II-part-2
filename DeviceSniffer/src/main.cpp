@@ -10,16 +10,15 @@
 #include <esp_wifi_types.h>
 
 // Structure to hold client device information
-#include "sniffer.h"
 #include <Arduino.h>
 #include "mqttHandler.h"
 
 Scheduler userScheduler;
 painlessMesh mesh;
 
-bool isController = true;
+bool isController = false;
 
-meshNode myMesh("MeshPrefix", "MeshPassword", 5555, isController, "ControllerNode");
+meshNode myMesh("MeshPrefix", "MeshPassword", 5555, isController, "Node1");
 
 unsigned long lastCall = 0;
 const unsigned long interval = 60000;
@@ -102,12 +101,12 @@ void loop()
 {
     myMesh.update();
 
-    unsigned long now = millis();
+    unsigned long timerNow = millis();
 
-    if (now - lastCall < interval)
+    if (timerNow - lastCall < interval)
     {
         String payload = createJsonArray(myMesh.devices);
-        lastCall = now;
+        lastCall = timerNow;
         sendToMQTT(payload);
     }
 
@@ -120,7 +119,7 @@ void loop()
 
     String macStr = macToString(lastClient.mac);
     int8_t rssi = lastClient.rssi;
-    uint32_t now = millis();
+    uint32_t lastSeenNow = millis();
 
     bool seenBefore = false;
 
@@ -129,14 +128,14 @@ void loop()
         if (entry.mac == macStr)
         {
             seenBefore = true;
-            uint32_t dt = now - entry.lastSeenMs;
+            uint32_t dt = lastSeenNow - entry.lastSeenMs;
 
             if (dt < DUP_WINDOW_MS)
             {
                 return;
             }
 
-            entry.lastSeenMs = now;
+            entry.lastSeenMs = lastSeenNow;
             break;
         }
     }
@@ -145,7 +144,7 @@ void loop()
     {
         SeenMac entry;
         entry.mac = macStr;
-        entry.lastSeenMs = now;
+        entry.lastSeenMs = lastSeenNow;
         seenMacs.push_back(entry);
     }
 
