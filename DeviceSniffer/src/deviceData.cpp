@@ -18,6 +18,7 @@ deviceData::deviceData(const String &mac, time_t ts, int8_t s1, int8_t s2, int8_
 }
 
 String deviceData::getMac() const { return macAdress; }
+time_t deviceData::getTimestamp() const { return timestamp; }
 int8_t deviceData::getRssi1() const { return sniffer1rssi; }
 int8_t deviceData::getRssi2() const { return sniffer2rssi; }
 int8_t deviceData::getRssi3() const { return sniffer3rssi; }

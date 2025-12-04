@@ -28,6 +28,7 @@ private:
     void addSnifferSample(const String &mac, int8_t rssi, const String &devName);
 
 public:
+    std::vector<deviceData> devices;
     meshNode(const std::string &meshPrefix,
              const std::string &meshPassword,
              int meshPort,

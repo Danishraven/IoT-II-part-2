@@ -93,7 +93,7 @@ void setup()
     myMesh.begin();
     if (isController)
     {
-        // start wifi
+        initWiFi();
     }
     startSniffer(CHANNEL);
 }
@@ -106,8 +106,9 @@ void loop()
 
     if (now - lastCall < interval)
     {
-        // Time data here
-        sendToMQTT();
+        String payload = createJsonArray(myMesh.devices);
+        lastCall = now;
+        sendToMQTT(payload);
     }
 
     if (!hasNewClient)
@@ -150,4 +151,25 @@ void loop()
 
     myMesh.sendDataToMesh(macStr, rssi);
     clients.push_back(lastClient);
+}
+
+String createJsonArray (vector<deviceData> &devices)
+{
+    String json = "[";
+    for (size_t i = 0; i < devices.size(); i++)
+    {
+        const deviceData &dev = devices[i];
+        json += "{";
+        json += "\"mac\":\"" + dev.getMac() + "\",";
+        json += "\"X\":" + String(dev.Point.x) + ",";
+        json += "\"Y\":" + String(dev.Point.y) + ",";
+        json += "\"timestamp\":" + String(dev.getTimestamp());
+        json += "}";
+        if (i < devices.size() - 1)
+        {
+            json += ",";
+        }
+    }
+    json += "]";
+    return json;
 }
