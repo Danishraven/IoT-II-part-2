@@ -14,7 +14,16 @@
 Scheduler userScheduler;
 painlessMesh mesh;
 
-meshNode myMesh("MeshPrefix", "MeshPassword", 5555);
+meshNode myMesh("MeshPrefix", "MeshPassword", 5555, true, "ControllerNode");
+
+struct SeenMac {
+  String mac;
+  uint32_t lastSeenMs;
+};
+
+std::vector<SeenMac> seenMacs;
+
+const uint32_t DUP_WINDOW_MS = 500;
 
 struct ClientDevice
 {
@@ -32,16 +41,6 @@ static String macToString(const uint8_t *mac)
   sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X",
           mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
   return String(macStr);
-}
-
-static void sendClient(const uint8_t *mac, int8_t rssi)
-{
-  ClientDevice c;
-  memcpy(c.mac, mac, 6);
-  c.rssi = rssi;
-  clients.push_back(c);
-
-  myMesh.sendWithNodeTime(macToString(mac), rssi);
 }
 
 volatile bool hasNewClient = false;
@@ -90,19 +89,40 @@ void loop()
 {
   myMesh.update();
 
-  static unsigned long lastTick = 0;
-  if (millis() - lastTick > 1000) {
-    lastTick = millis();
+  if (!hasNewClient) {
+    return;
   }
 
-  if (hasNewClient) {
-    hasNewClient = false;
+  hasNewClient = false;
 
-    // Now we are in normal Arduino context: safe to use String, vector, mesh send, etc.
-    String macStr = macToString(lastClient.mac);
-    myMesh.sendWithNodeTime(macStr, lastClient.rssi);
+  String macStr = macToString(lastClient.mac);
+  int8_t rssi   = lastClient.rssi;
+  uint32_t now  = millis();
 
-    // Optional: also push into your vector here
-    clients.push_back(lastClient);
+  bool seenBefore = false;
+
+  for (auto &entry : seenMacs) {
+    if (entry.mac == macStr) {
+      seenBefore = true;
+      uint32_t dt = now - entry.lastSeenMs;
+
+      if (dt < DUP_WINDOW_MS) {
+        return;
+      }
+
+      entry.lastSeenMs = now;
+      break;
+    }
   }
+
+  if (!seenBefore) {
+    SeenMac entry;
+    entry.mac = macStr;
+    entry.lastSeenMs = now;
+    seenMacs.push_back(entry);
+  }
+
+  myMesh.sendDataToMesh(macStr, rssi);
+  clients.push_back(lastClient);
 }
+
