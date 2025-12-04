@@ -1,10 +1,26 @@
 #include "meshNode.h"
+#include "deviceData.h"
+#include <vector>
 
 extern Scheduler userScheduler;
 extern painlessMesh mesh;
 
+struct coordinates
+{
+    float x;
+    float y;
+};
+
 static meshNode* g_controllerInstance = nullptr;
 static meshNode* g_clientInstance = nullptr;
+
+const coordinates snifferPositions[3] = {
+    {0.0f, 0.0f},   // controllerNode
+    {5.0f, 0.0f},   // Node1
+    {2.5f, 4.33f}   // Node2
+};
+
+std::vector<deviceData> devices;
 
 void receivedCallback(uint32_t from, String &msg);
 
@@ -131,11 +147,14 @@ void meshNode::addSnifferSample(const String& mac, int8_t rssi, const String& de
 
             // If all three devices have reported, call your function
             if (ms.filled[0] && ms.filled[1] && ms.filled[2]) {
-                deviceData.setSnifferRssi(ms.mac,
+                deviceData data = deviceData(ms.mac,
                                           ms.rssi[0],
                                           ms.rssi[1],
                                           ms.rssi[2]);
-
+                data.trilaterate(snifferPositions[0].x, snifferPositions[0].y,
+                                 snifferPositions[1].x, snifferPositions[1].y,
+                                 snifferPositions[2].x, snifferPositions[2].y);
+                devices.push_back(data);
                 // Reset for next round for this MAC
                 ms.filled[0] = ms.filled[1] = ms.filled[2] = false;
             }
